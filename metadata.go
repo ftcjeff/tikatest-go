@@ -8,11 +8,12 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"strings"
+	"io"
 )
 
 var tikaUrlOpt = flag.String("tika", "http://localhost:9998", "The URI to the Tika Server")
 var fileToProcessOpt = flag.String("file", "", "The file to process")
-var numIterationOpt = flag.Int("count", 1000, "The number of time to process the given file")
+var numIterationOpt = flag.Int("count", 1000, "The number of times to process the given file")
 
 func main() {
 	flag.Parse()
@@ -28,8 +29,11 @@ func main() {
 
 	client := &http.Client {}
 
+	bufReader := strings.NewReader(string(buf))
+
 	for i := 0; i < *numIterationOpt; i++ {
-		req, err := http.NewRequest("PUT", uri, strings.NewReader(string(buf)))
+		bufReader.Seek(0, io.SeekStart)
+		req, err := http.NewRequest("PUT", uri, bufReader)
 		if err != nil {
 			log.Fatal(err)
 		}
